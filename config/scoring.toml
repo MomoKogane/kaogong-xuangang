@@ -1,0 +1,42 @@
+# 评分与分档参数（可选覆盖，删掉即用默认值）
+
+[history]
+max_years = 3
+weights = [0.5, 0.3, 0.2]
+
+[tiers]
+bao = 10.0       # 预估分 - 预测分 >= 10 -> 保
+wen = 4.0        # >= 4 -> 稳
+chong = 0.0      # >= 0 -> 冲，< 0 -> 风险
+
+[weights]
+fit = 45.0        # 分数适配
+heat = 20.0       # 竞争热度（越低越好）
+capacity = 15.0   # 招录容量
+preference = 10.0 # 意向地区
+barrier = 10.0    # 岗位限制对你形成的竞争壁垒
+
+[capacity]
+headcount_full = 5.0
+interview_full = 15.0
+headcount_weight = 0.7
+
+[heat_percentile]
+high = 0.75
+medium = 0.5
+
+[preference]
+neutral = 0.5     # 没填意向地区时给中性分
+
+[barrier]
+"性别" = 1.0
+"民族" = 1.0
+"特殊身份" = 1.0
+"户籍" = 0.8
+"基层经验" = 0.8
+"执业资格" = 0.6
+"政治面貌" = 0.5
+"应届" = 0.5
+"专业" = 0.4
+"学历" = 0.3
+"学位" = 0.2

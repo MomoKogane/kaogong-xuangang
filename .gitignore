@@ -1,0 +1,13 @@
+out/
+data/incoming/
+data/imported/
+data/tmp*/
+.test-tmp/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.venv/

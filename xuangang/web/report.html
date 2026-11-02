@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+  :root { --ink:#1f2328; --muted:#6b7280; --line:#e5e7eb; --bg:#f6f7f9; --brand:#1f4e79; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:var(--brand); color:#fff; padding:20px 28px; }
+  header h1 { margin:0 0 6px; font-size:22px; }
+  header .meta { font-size:13px; opacity:.9; line-height:1.7; }
+  .cards { display:flex; gap:12px; flex-wrap:wrap; padding:16px 28px 0; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 16px; min-width:120px; }
+  .card b { display:block; font-size:22px; }
+  .card span { color:var(--muted); font-size:12px; }
+  .card.ok b { color:#1a7f37; } .card.warn b { color:#b45309; } .card.bad b { color:#b91c1c; }
+  .filters { display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:14px 28px; }
+  .filters input[type=text] { padding:7px 10px; border:1px solid var(--line); border-radius:8px; width:280px; }
+  .filters select { padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .chip { border:1px solid var(--line); background:#fff; border-radius:999px; padding:5px 12px; cursor:pointer; font-size:13px; user-select:none; }
+  .chip.on { background:var(--brand); color:#fff; border-color:var(--brand); }
+  main { padding:0 28px 40px; }
+  .table-wrap { background:#fff; border:1px solid var(--line); border-radius:10px; overflow:auto; }
+  table { border-collapse:collapse; width:100%; font-size:13px; }
+  th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+  th { background:#f0f3f7; position:sticky; top:0; z-index:1; white-space:nowrap; }
+  tbody tr { cursor:pointer; }
+  tbody tr:hover { background:#f5f8ff; }
+  td.num { text-align:right; white-space:nowrap; }
+  .badge { display:inline-block; border-radius:6px; padding:1px 8px; font-size:12px; font-weight:600; }
+  .tag { display:inline-block; border-radius:5px; padding:1px 6px; font-size:11px; margin:0 4px 3px 0; background:#eef2f7; color:#374151; }
+  .tag-pref { background:#dbeafe; color:#1e40af; }
+  .tag-barrier { background:#dcfce7; color:#166534; }
+  .b-保 { background:#c6efce; color:#136c2e; } .b-稳 { background:#bdd7ee; color:#1f4e79; }
+  .b-冲 { background:#ffeb9c; color:#8a6100; } .b-风险 { background:#ffc7ce; color:#9c0006; }
+  .s-符合 { background:#c6efce; color:#136c2e; } .s-存疑 { background:#ffeb9c; color:#8a6100; } .s-不符合 { background:#e5e7eb; color:#4b5563; }
+  .muted { color:var(--muted); }
+  .pager { display:flex; gap:10px; align-items:center; padding:10px 0; font-size:13px; }
+  .pager button { padding:5px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; cursor:pointer; }
+  .drawer { position:fixed; top:0; right:0; width:min(640px, 92vw); height:100%; background:#fff; border-left:1px solid var(--line); box-shadow:-6px 0 24px rgba(0,0,0,.12); padding:20px 24px; overflow:auto; transform:translateX(100%); transition:transform .18s ease; z-index:20; }
+  .drawer.open { transform:translateX(0); }
+  .drawer h2 { margin:0 0 4px; font-size:18px; }
+  .drawer h3 { margin:18px 0 6px; font-size:14px; color:var(--brand); }
+  .drawer .close { position:absolute; right:16px; top:14px; border:none; background:#f0f3f7; border-radius:8px; width:32px; height:32px; cursor:pointer; font-size:18px; }
+  .kv { display:grid; grid-template-columns:110px 1fr; gap:6px 10px; font-size:13px; }
+  .kv dt { color:var(--muted); } .kv dd { margin:0; }
+  .check-ok { color:#136c2e; } .check-bad { color:#9c0006; } .check-unknown { color:#8a6100; }
+  .warnbox { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:8px 12px; font-size:13px; }
+  .history { font-size:13px; }
+  .history li { margin:2px 0; }
+  .empty { padding:30px; text-align:center; color:var(--muted); }
+  footer { padding:0 28px 30px; color:var(--muted); font-size:12px; }
+  @media (max-width: 720px) { header, .filters, main, footer { padding-left:14px; padding-right:14px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>考公选岗 · 岗位筛选报告</h1>
+  <div class="meta" id="profile"></div>
+  <div class="meta" id="generated"></div>
+</header>
+<section class="cards" id="cards"></section>
+<section class="filters">
+  <input type="text" id="search" placeholder="搜索部门 / 职位 / 代码 / 专业...">
+  <select id="sort">
+    <option value="index">按推荐指数</option>
+    <option value="predicted">按预测进面分</option>
+    <option value="history">按历史年数</option>
+    <option value="headcount">按招录人数</option>
+    <option value="preference">按意向地区</option>
+    <option value="barrier">按竞争壁垒</option>
+  </select>
+  <div class="chips" id="statusChips">
+    <span class="chip on" data-status="符合">符合</span>
+    <span class="chip on" data-status="存疑">存疑</span>
+    <span class="chip" data-status="不符合">不符合</span>
+  </div>
+  <div class="chips" id="tierChips">
+    <span class="chip" data-tier="有历史">有历史分</span>
+    <span class="chip" id="prefChip">只看意向地区</span>
+  </div>
+  <button class="chip" id="export">导出当前筛选 CSV</button>
+  <span class="muted" style="font-size:12px">「优势」= 意向地区命中，或岗位限制对你有利</span>
+</section>
+<main>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>分档</th><th>岗位</th><th>部门 / 单位</th><th>招录</th><th>学历</th>
+        <th>专业</th><th>应届</th><th>基层</th><th class="num">预测分</th>
+        <th class="num">历史</th><th class="num">指数</th><th>优势</th><th>状态</th><th>理由</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">没有符合条件的岗位，试试放宽筛选。</div>
+  </div>
+  <div class="pager">
+    <button id="prev">上一页</button>
+    <span id="pageInfo"></span>
+    <button id="next">下一页</button>
+    <span class="muted">共 <b id="total">0</b> 条</span>
+  </div>
+</main>
+<footer>本报告只做初筛，最终以招录机关解释和当年公告为准。分档与指数为启发式参考，不是录取概率。</footer>
+
+<aside class="drawer" id="drawer">
+  <button class="close" id="closeDrawer">×</button>
+  <div id="drawerBody"></div>
+</aside>
+
+<script id="payload" type="application/json">__DATA__</script>
+<script>
+(function () {
+  const DATA = JSON.parse(document.getElementById('payload').textContent);
+  const rows = DATA.rows || [];
+  document.getElementById('profile').textContent = DATA.profile || '';
+  document.getElementById('generated').textContent = '生成时间：' + DATA.generated;
+
+  const cards = [
+    ['岗位总数', DATA.stats.positions, ''], ['符合', DATA.stats.status['符合'] || 0, 'ok'],
+    ['存疑', DATA.stats.status['存疑'] || 0, 'warn'], ['不符合', DATA.stats.status['不符合'] || 0, 'bad'],
+    ['有历史分', DATA.stats.with_history, ''],
+    ['分数线记录', DATA.stats.records, '']
+  ];
+  document.getElementById('cards').innerHTML = cards.map(c =>
+    `<div class="card ${c[2]}"><b>${c[1]}</b><span>${c[0]}</span></div>`).join('');
+
+  const state = { statuses: new Set(['符合', '存疑']), historyOnly: false, prefOnly: false, search: '', sort: 'index', page: 1, pageSize: 200 };
+  document.getElementById('prefChip').style.display = rows.some(r => r.preference != null) ? '' : 'none';
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const fmt = v => (v == null || v === '') ? '—' : v;
+  const tierBadge = t => t ? `<span class="badge b-${esc(t)}">${esc(t)}</span>` : '<span class="muted">—</span>';
+  const statusBadge = s => `<span class="badge s-${esc(s)}">${esc(s)}</span>`;
+  const histYears = r => r.history && r.history.length ? r.history.map(h => h.year).join('/') : '—';
+  const advantageBadges = r => {
+    const tags = (r.advantage_tags || []).map(t => `<span class="tag ${t.kind === 'pref' ? 'tag-pref' : 'tag-barrier'}">${esc(t.text)}</span>`);
+    return tags.length ? tags.join('') : '<span class="muted">—</span>';
+  };
+
+  function filtered() {
+    const keyword = state.search.trim().toLowerCase();
+    let list = rows.filter(r => {
+      if (!state.statuses.has(r.status)) return false;
+      if (state.historyOnly && (!r.history || !r.history.length)) return false;
+      if (state.prefOnly && r.preference !== 1) return false;
+      if (keyword) {
+        const blob = [r.dept, r.unit, r.post, r.code, r.major, r.education, r.workplace, r.remark].join(' ').toLowerCase();
+        if (!blob.includes(keyword)) return false;
+      }
+      return true;
+    });
+    const key = {
+      index: r => -(r.index || 0),
+      predicted: r => -(r.predicted == null ? -1 : r.predicted),
+      history: r => -(r.history ? r.history.length : 0),
+      headcount: r => -(r.headcount || 0),
+      preference: r => -(r.preference == null ? 0 : r.preference),
+      barrier: r => -(r.barrier || 0)
+    }[state.sort];
+    return list.sort((a, b) => key(a) - key(b));
+  }
+
+  function render() {
+    const list = filtered();
+    const pages = Math.max(1, Math.ceil(list.length / state.pageSize));
+    if (state.page > pages) state.page = pages;
+    const start = (state.page - 1) * state.pageSize;
+    const pageRows = list.slice(start, start + state.pageSize);
+    document.getElementById('tbody').innerHTML = pageRows.map((r, i) => `
+      <tr data-index="${start + i}">
+        <td>${tierBadge(r.tier)}</td>
+        <td><b>${esc(r.post)}</b><div class="muted">${esc(r.code || '')}</div></td>
+        <td>${esc(r.dept)}<div class="muted">${esc(r.unit || '')}</div></td>
+        <td class="num">${esc(fmt(r.headcount))}</td>
+        <td>${esc(fmt(r.education))}</td>
+        <td>${esc(fmt(r.major))}</td>
+        <td>${esc(fmt(r.fresh))}</td>
+        <td>${esc(fmt(r.grassroots))}</td>
+        <td class="num">${r.predicted == null ? '—' : esc(r.predicted) + (r.predicted_scale ? '/' + esc(r.predicted_scale) : '')}</td>
+        <td class="num">${esc(histYears(r))}</td>
+        <td class="num">${esc(r.index)}</td>
+        <td>${advantageBadges(r)}</td>
+        <td>${statusBadge(r.status)}</td>
+        <td>${esc(r.reason)}</td>
+      </tr>`).join('');
+    document.getElementById('empty').style.display = list.length ? 'none' : 'block';
+    document.getElementById('total').textContent = list.length;
+    document.getElementById('pageInfo').textContent = `第 ${state.page} / ${pages} 页`;
+    state.visible = list;
+  }
+
+  function openDrawer(index) {
+    const r = state.visible[index];
+    if (!r) return;
+    const kv = [
+      ['岗位id', r.id], ['部门', r.dept], ['用人司局', r.unit], ['职位名称', r.post], ['职位代码', r.code],
+      ['考试类别', r.category], ['招录人数', r.headcount], ['学历', r.education], ['学位', r.degree],
+      ['专业', r.major], ['政治面貌', r.politics], ['应届', r.fresh], ['基层经历', r.grassroots],
+      ['证书', r.cert], ['户籍', r.hukou], ['工作地点', r.workplace], ['备注', r.remark], ['来源', r.source + ' / ' + r.sheet + ' 第' + r.row + '行']
+    ];
+    const checks = (r.checks || []).map(c => {
+      const cls = c.ok === true ? 'check-ok' : (c.ok === false ? 'check-bad' : 'check-unknown');
+      const mark = c.ok === true ? '✓' : (c.ok === false ? '✗' : '?');
+      return `<li class="${cls}"><b>${mark} ${esc(c.dim)}</b>：${esc(c.detail)}${c.evidence ? `<div class="muted">依据：${esc(c.evidence)}</div>` : ''}</li>`;
+    }).join('');
+    const history = (r.history || []).map(h => `<li>${esc(h.year)} 年：最低 ${esc(fmt(h.min))}${h.max != null && h.max !== h.min ? ' / 最高 ' + esc(h.max) : ''}（${esc(h.scale)} 分制，${esc(h.source)}）</li>`).join('');
+    const notes = (r.notes || []).map(n => `<li>${esc(n)}</li>`).join('');
+    const advantages = [];
+    if (r.preference === 1) advantages.push(`意向地区命中：${r.preference_label}`);
+    else if (r.preference === 0) advantages.push('不在意向地区');
+    if (r.barrier_tags && r.barrier_tags.length) advantages.push('岗位限制对你有利：' + r.barrier_tags.join('、') + `（壁垒分 ${r.barrier}）`);
+    document.getElementById('drawerBody').innerHTML = `
+      <h2>${esc(r.post)}</h2>
+      <div class="muted">${statusBadge(r.status)} ${tierBadge(r.tier)} ${r.tier ? '' : ''} 指数 ${esc(r.index)} · 置信度 ${esc(r.confidence)} · 热度 ${esc(fmt(r.heat_label))}</div>
+      <h3>选岗优势</h3>${advantages.length ? `<ul>${advantages.map(a => `<li>${esc(a)}</li>`).join('')}</ul>` : '<div class="muted">没有配置偏好，或岗位没有形成限制壁垒</div>'}
+      <h3>判定明细</h3><ul>${checks}</ul>
+      ${r.warnings ? `<h3>提醒</h3><div class="warnbox">${esc(r.warnings)}</div>` : ''}
+      <h3>近三年进面分</h3>${history ? `<ul class="history">${history}</ul>` : '<div class="muted">没有可用的历史分数</div>'}
+      ${r.predicted != null ? `<p>预测今年最低进面分：<b>${esc(r.predicted)}</b>（${esc(r.predicted_scale)} 分制，置信度 ${esc(r.confidence)}）${r.margin != null ? `，与你的预估分差 <b>${esc(r.margin)}</b>` : ''}</p>` : ''}
+      <h3>岗位信息</h3><dl class="kv">${kv.map(item => `<dt>${esc(item[0])}</dt><dd>${esc(fmt(item[1]))}</dd>`).join('')}</dl>
+      ${notes ? `<h3>评分说明</h3><ul>${notes}</ul>` : ''}
+      <p><a href="https://www.baidu.com/s?wd=${encodeURIComponent(r.dept + ' ' + r.post)}" target="_blank" rel="noreferrer">去搜索该岗位（外部链接）</a></p>
+    `;
+    document.getElementById('drawer').classList.add('open');
+  }
+
+  document.getElementById('tbody').addEventListener('click', event => {
+    const tr = event.target.closest('tr');
+    if (tr) openDrawer(Number(tr.dataset.index));
+  });
+  document.getElementById('closeDrawer').addEventListener('click', () => document.getElementById('drawer').classList.remove('open'));
+  document.getElementById('drawer').addEventListener('click', event => { if (event.target.id === 'drawer') event.currentTarget.classList.remove('open'); });
+
+  document.getElementById('search').addEventListener('input', event => { state.search = event.target.value; state.page = 1; render(); });
+  document.getElementById('sort').addEventListener('change', event => { state.sort = event.target.value; state.page = 1; render(); });
+  document.querySelectorAll('#statusChips .chip').forEach(chip => chip.addEventListener('click', () => {
+    const status = chip.dataset.status;
+    if (state.statuses.has(status)) { state.statuses.delete(status); chip.classList.remove('on'); }
+    else { state.statuses.add(status); chip.classList.add('on'); }
+    state.page = 1; render();
+  }));
+  const historyChip = document.querySelector('#tierChips .chip');
+  historyChip.addEventListener('click', () => {
+    state.historyOnly = !state.historyOnly; historyChip.classList.toggle('on', state.historyOnly); state.page = 1; render();
+  });
+  const prefChip = document.getElementById('prefChip');
+  prefChip.addEventListener('click', () => {
+    state.prefOnly = !state.prefOnly; prefChip.classList.toggle('on', state.prefOnly); state.page = 1; render();
+  });
+  document.getElementById('prev').addEventListener('click', () => { if (state.page > 1) { state.page--; render(); } });
+  document.getElementById('next').addEventListener('click', () => { state.page++; render(); });
+  document.getElementById('export').addEventListener('click', () => {
+    const columns = ['status','tier','index','predicted','dept','unit','post','code','headcount','education','major','politics','fresh','grassroots','cert','remark','preference_label','barrier_tags','reason'];
+    const lines = [columns.join(',')];
+    for (const r of state.visible) {
+      lines.push(columns.map(c => '"' + String(r[c] == null ? '' : r[c]).replace(/"/g, '""') + '"').join(','));
+    }
+    const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'xuangang-filtered.csv'; a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+# 内置仿真数据的清单：直接用它跑演示。
+# 真实数据请照抄格式，把 file 指向 data/incoming/ 下的文件。
+
+[[positions]]
+file = "data/sample/positions/2027国考职位表.xlsx"
+exam = "guokao"
+province = "全国"
+year = 2027
+preset = "guokao"
+
+[[history]]
+file = "data/sample/history/2024国考进面分数线.xlsx"
+exam = "guokao"
+province = "全国"
+year = 2024
+kind = "笔试最低进面分"
+scale = 200
+
+[[history]]
+file = "data/sample/history/2025国考进面分数线.xlsx"
+exam = "guokao"
+province = "全国"
+year = 2025
+kind = "笔试最低进面分"
+scale = 200
+
+[[history]]
+file = "data/sample/history/2026国考进面分数线.xlsx"
+exam = "guokao"
+province = "全国"
+year = 2026
+kind = "笔试最低进面分"
+scale = 200
+
+[[positions]]
+file = "data/sample/province/2026广东省考职位表.xlsx"
+exam = "shengkao"
+province = "广东省"
+year = 2026
+preset = "guangdong"
+
+[[history]]
+file = "data/sample/province/2025广东省考进面分数线.xlsx"
+exam = "shengkao"
+province = "广东省"
+year = 2025
+kind = "笔试最低进面分"
+scale = 300

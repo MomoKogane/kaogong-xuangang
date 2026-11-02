@@ -1,0 +1,13 @@
+# 自定义备注抽取规则（可选）。
+# 内置规则在 xuangang/rules/notes.py；这里追加的规则会一起生效。
+# dimension 可取：gender / politics / ethnicity / hukou / grassroots / projects /
+#                cert / school / age / special / service / warning
+# kind 取 hard（硬条件）或 soft（只提醒）。
+#
+# [[rule]]
+# id = "custom_cert"
+# dimension = "cert"
+# kind = "hard"
+# pattern = "具有(X)证书"
+# group = 1
+# message = "自定义证书要求"

@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xuangang"
+version = "0.1.0"
+description = "考公选岗：按个人条件与往年进面分数线筛选公务员岗位"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools.packages.find]
+include = ["xuangang*"]
+
+[tool.setuptools.package-data]
+xuangang = ["resources/**/*", "web/*"]

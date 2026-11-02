@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>考公选岗</title>
+<style>
+  :root { --ink:#1f2328; --muted:#6b7280; --line:#e5e7eb; --bg:#f6f7f9; --brand:#1f4e79; --ok:#1a7f37; --warn:#b45309; --bad:#b91c1c; --soft:#eef2f7; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:linear-gradient(135deg,#1f4e79,#2c6ea8); color:#fff; padding:20px 28px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  header h1 { margin:0; font-size:23px; }
+  header p { margin:4px 0 0; font-size:13px; opacity:.92; }
+  header .actions { display:flex; gap:10px; }
+  header button { background:rgba(255,255,255,.14); color:#fff; border:1px solid rgba(255,255,255,.4); }
+  header button:hover { background:rgba(255,255,255,.25); }
+  main { max-width:1280px; margin:0 auto; padding:18px 20px 70px; }
+  .steps { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:960px) { .steps { grid-template-columns:1fr; } }
+  .panel { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+  .panel.wide { grid-column:1 / -1; }
+  .panel-head { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+  .panel-head .num { width:26px; height:26px; border-radius:50%; background:var(--brand); color:#fff; display:grid; place-items:center; font-size:14px; font-weight:700; flex:0 0 auto; }
+  .panel-head h2 { margin:0; font-size:16px; }
+  .panel-head .hint { margin-left:auto; color:var(--muted); font-size:12px; }
+  .sub { color:var(--muted); font-size:12px; margin:4px 0 12px; }
+  .drop { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; border:1.5px dashed #b9c6d6; border-radius:12px; padding:20px 14px; background:#fbfdff; cursor:pointer; transition:.15s; text-align:center; }
+  .drop:hover, .drop.drag { border-color:var(--brand); background:#eef6ff; }
+  .drop b { font-size:14px; color:var(--brand); }
+  .drop span { font-size:12px; color:var(--muted); }
+  .drop input { display:none; }
+  .file-list { display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+  .file-item { border:1px solid var(--line); border-radius:10px; padding:9px 11px; background:#fff; font-size:13px; }
+  .file-item.uploading { border-style:dashed; background:#fbfdff; }
+  .file-item.error { border-color:#fca5a5; background:#fef2f2; }
+  .file-top { display:flex; align-items:center; gap:8px; }
+  .file-name { font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .file-state { font-size:12px; padding:1px 7px; border-radius:999px; background:var(--soft); color:var(--muted); }
+  .file-item.uploading .file-state { color:var(--brand); }
+  .file-item.error .file-state { background:#fee2e2; color:#991b1b; }
+  .file-meta { color:var(--muted); font-size:12px; margin-top:3px; line-height:1.6; }
+  .file-meta b { color:#374151; }
+  .file-warn { color:#9a3412; background:#fff7ed; border:1px solid #fed7aa; border-radius:7px; padding:5px 8px; font-size:12px; margin-top:6px; }
+  .section-summary { margin-top:8px; font-size:12px; color:var(--muted); }
+  .section-summary b { color:#374151; }
+  .file-config { display:flex; gap:8px; flex-wrap:wrap; margin-top:7px; align-items:center; }
+  .file-config label { font-size:12px; color:#4b5563; display:flex; gap:4px; align-items:center; }
+  .spinner { display:inline-block; width:11px; height:11px; border:2px solid #c7d2fe; border-top-color:var(--brand); border-radius:50%; animation:spin .8s linear infinite; vertical-align:-1px; margin-right:5px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .tag { display:inline-block; border-radius:5px; padding:1px 6px; font-size:11px; margin:0 4px 3px 0; background:var(--soft); color:#374151; }
+  .tag-pref { background:#dbeafe; color:#1e40af; }
+  .tag-barrier { background:#dcfce7; color:#166534; }
+  .panel.done .num { background:#198754; }
+  .panel.done { border-color:#cfe8d8; }
+  .file-config label { font-size:12px; color:#4b5563; display:flex; gap:4px; align-items:center; }
+  .micro { background:none; border:none; color:#9ca3af; cursor:pointer; font-size:18px; line-height:1; padding:2px 5px; }
+  .micro:hover { color:var(--bad); }
+  .meta-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px 12px; margin-top:12px; }
+  .meta-grid label, .field label { font-size:12px; color:#4b5563; display:flex; flex-direction:column; gap:4px; }
+  input[type=text], input[type=number], select { padding:7px 9px; border:1px solid #d5dbe3; border-radius:8px; font-size:13px; background:#fff; color:var(--ink); min-width:0; }
+  input:focus, select:focus { outline:2px solid #bcd7f2; border-color:var(--brand); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(165px,1fr)); gap:10px 12px; }
+  .field { display:flex; flex-direction:column; gap:4px; }
+  .ghost { background:#fff; border:1px solid var(--line); border-radius:9px; padding:7px 14px; cursor:pointer; font-size:13px; color:var(--ink); }
+  .ghost:hover { border-color:var(--brand); color:var(--brand); }
+  .ghost.small { padding:5px 10px; font-size:12px; }
+  .primary { background:var(--brand); color:#fff; border:none; border-radius:10px; padding:11px 24px; font-size:15px; cursor:pointer; }
+  .primary:hover { background:#173f63; }
+  .primary:disabled, .ghost:disabled { opacity:.55; cursor:not-allowed; }
+  .actions-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:14px; }
+  #status { color:var(--muted); font-size:13px; }
+  .projects { margin-top:10px; border-top:1px dashed var(--line); padding-top:10px; }
+  .projects-title { font-size:13px; color:#374151; font-weight:600; margin-bottom:6px; }
+  .project-row { display:flex; gap:8px; align-items:center; margin-bottom:6px; flex-wrap:wrap; }
+  .project-row input[type=text] { flex:1; min-width:160px; }
+  .project-row label { font-size:12px; color:#4b5563; display:flex; gap:4px; align-items:center; }
+  .results { margin-top:18px; }
+  .cards { display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:11px; padding:9px 15px; min-width:112px; }
+  .card b { display:block; font-size:21px; }
+  .card span { font-size:12px; color:var(--muted); }
+  .card.ok b { color:var(--ok); } .card.warn b { color:var(--warn); } .card.bad b { color:var(--bad); }
+  .result-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+  .result-head h2 { margin:0; font-size:17px; }
+  .badge { display:inline-block; border-radius:6px; padding:1px 8px; font-size:12px; font-weight:600; }
+  .b-保 { background:#c6efce; color:#136c2e; } .b-稳 { background:#bdd7ee; color:#1f4e79; }
+  .b-冲 { background:#ffeb9c; color:#8a6100; } .b-风险 { background:#ffc7ce; color:#9c0006; }
+  .s-符合 { background:#c6efce; color:#136c2e; } .s-存疑 { background:#ffeb9c; color:#8a6100; } .s-不符合 { background:#e5e7eb; color:#4b5563; }
+  .muted { color:var(--muted); }
+  .filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:10px 0; }
+  .chips { display:flex; gap:6px; }
+  .chip { border:1px solid var(--line); background:#fff; border-radius:999px; padding:5px 12px; font-size:13px; cursor:pointer; user-select:none; }
+  .chip.on { background:var(--brand); color:#fff; border-color:var(--brand); }
+  .table-wrap { background:#fff; border:1px solid var(--line); border-radius:12px; overflow:auto; max-height:640px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+  th { background:#eef2f7; position:sticky; top:0; z-index:1; white-space:nowrap; }
+  tbody tr { cursor:pointer; } tbody tr:hover { background:#f5f8ff; }
+  td.num { text-align:right; white-space:nowrap; }
+  .pager { display:flex; gap:10px; align-items:center; padding:10px 0; font-size:13px; }
+  .pager button { padding:5px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; cursor:pointer; }
+  details.issues { margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13px; }
+  details.issues summary { cursor:pointer; color:var(--warn); font-weight:600; }
+  details.issues ul { margin:8px 0 0; padding-left:18px; color:#4b5563; line-height:1.7; }
+  .drawer { position:fixed; top:0; right:0; width:min(640px,94vw); height:100%; background:#fff; border-left:1px solid var(--line); box-shadow:-6px 0 24px rgba(0,0,0,.12); transform:translateX(100%); transition:transform .18s; overflow:auto; padding:20px 24px; z-index:30; }
+  .drawer.open { transform:translateX(0); }
+  .drawer .close { position:absolute; right:14px; top:12px; border:none; background:var(--soft); border-radius:8px; width:30px; height:30px; font-size:17px; cursor:pointer; }
+  .drawer h2 { margin:0 0 6px; font-size:18px; }
+  .drawer h3 { margin:16px 0 6px; font-size:14px; color:var(--brand); }
+  .kv { display:grid; grid-template-columns:104px 1fr; gap:5px 10px; font-size:13px; }
+  .kv dt { color:var(--muted); } .kv dd { margin:0; }
+  .check-ok { color:#136c2e; } .check-bad { color:#9c0006; } .check-unknown { color:#8a6100; }
+  .warnbox { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:8px 12px; font-size:13px; }
+  .toast { position:fixed; right:18px; bottom:18px; background:#1f2937; color:#fff; padding:11px 17px; border-radius:10px; font-size:13px; opacity:0; transition:opacity .2s; max-width:430px; z-index:40; }
+  .toast.show { opacity:1; } .toast.bad { background:#991b1b; }
+  .hidden { display:none !important; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>考公选岗</h1>
+    <p>上传岗位表和往年进面分数线，自动识别格式、按个人条件筛岗并排序</p>
+  </div>
+  <div class="actions">
+    <button id="sampleBtn" class="ghost" type="button">先看示例数据</button>
+  </div>
+</header>
+
+<main>
+  <div class="steps">
+    <section class="panel" id="panelPositions">
+      <div class="panel-head"><span class="num">1</span><h2>上传岗位表</h2><span class="hint" id="posHint">可多选</span></div>
+      <div class="sub">国考职位表可能按系统拆成多个文件，一起选就行。列名不用改，系统会自动识别。</div>
+      <label class="drop" id="posDrop">
+        <input type="file" id="posInput" multiple accept=".xlsx,.xlsm,.xls,.csv">
+        <b>点击选择，或把文件拖到这里</b>
+        <span>支持 .xlsx / .xlsm / .xls / .csv</span>
+      </label>
+      <div class="file-list" id="posList"></div>
+      <div class="section-summary" id="posSummary"></div>
+      <div class="meta-grid">
+        <label>考试类型
+          <select id="posExam"><option value="guokao">国考</option><option value="shengkao">省考</option></select>
+        </label>
+        <label>省份（省考填，国考留空）
+          <input type="text" id="posProvince" placeholder="如 广东省">
+        </label>
+        <label>岗位年份
+          <input type="number" id="posYear" value="2027" min="2000" max="2100">
+        </label>
+      </div>
+    </section>
+
+    <section class="panel" id="panelHistory">
+      <div class="panel-head"><span class="num">2</span><h2>上传往年进面分数线</h2><span class="hint" id="histHint">可选</span></div>
+      <div class="sub">民间整理的表也能用，只取「岗位名称/代码 + 分数」；专业、学历、政治面貌等条件一律以今年岗位表为准。年份和分数制式会自动识别，识别错了可以手动改；没有分数线也能先筛岗位。</div>
+      <label class="drop" id="histDrop">
+        <input type="file" id="histInput" multiple accept=".xlsx,.xlsm,.xls,.csv">
+        <b>点击选择，或把文件拖到这里</b>
+        <span>支持多份、跨年份</span>
+      </label>
+      <div class="file-list" id="histList"></div>
+      <div class="section-summary" id="histSummary"></div>
+    </section>
+
+    <section class="panel wide" id="panelProfile">
+      <div class="panel-head"><span class="num">3</span><h2>填写你的条件</h2><span class="hint" id="profileHint"></span></div>
+      <div class="sub">标有「可选」的可以留空；填得越全，判定越准。条件会自动保存在本机浏览器里。</div>
+      <div class="grid" id="profileGrid">
+        <div class="field"><label>姓名</label><input type="text" data-key="name" value="bob"></div>
+        <div class="field"><label>学历</label><select data-key="education_level"><option>大专</option><option selected>本科</option><option>硕士研究生</option><option>博士研究生</option></select></div>
+        <div class="field"><label>学位</label><select data-key="degree"><option>无</option><option selected>学士</option><option>硕士</option><option>博士</option></select></div>
+        <div class="field"><label>是否全日制</label><select data-key="full_time"><option value="true" selected>是</option><option value="false">否</option></select></div>
+        <div class="field"><label>专业名称</label><input type="text" data-key="major" value="汉语言文学"></div>
+        <div class="field"><label>专业代码（可选）</label><input type="text" data-key="major_code" placeholder="如 050101"></div>
+        <div class="field"><label>专业目录层级</label><select data-key="major_level"><option selected>本科</option><option>研究生</option></select></div>
+        <div class="field"><label>毕业院校（可选）</label><input type="text" data-key="school"></div>
+        <div class="field"><label>院校标签（可选）</label><input type="text" data-key="school_tags" placeholder="双一流,985"></div>
+        <div class="field"><label>政治面貌</label><select data-key="politics"><option>中共党员</option><option>中共预备党员</option><option selected>共青团员</option><option>群众</option><option>民主党派</option></select></div>
+        <div class="field"><label>民族</label><input type="text" data-key="ethnicity" value="汉族"></div>
+        <div class="field"><label>性别</label><select data-key="gender"><option value="">未填</option><option selected>男</option><option>女</option></select></div>
+        <div class="field"><label>出生年份（可选）</label><input type="number" data-key="birth_year" placeholder="如 2001"></div>
+        <div class="field"><label>应届身份</label><select data-key="fresh_status"><option>当年应届</option><option selected>择业期内</option><option>非应届</option></select></div>
+        <div class="field"><label>毕业年份</label><input type="number" data-key="graduation_year" placeholder="如 2025"></div>
+        <div class="field"><label>已落实工作单位</label><select data-key="has_employment_record"><option value="false" selected>否</option><option value="true">是</option></select></div>
+        <div class="field"><label>基层工作年限</label><input type="number" data-key="grassroots_years" value="0" min="0"></div>
+        <div class="field"><label>证书（可选，逗号分隔）</label><input type="text" data-key="certificates" placeholder="法律职业资格A证"></div>
+        <div class="field"><label>户籍省份（可选）</label><input type="text" data-key="hukou_province" placeholder="如 广东省"></div>
+        <div class="field"><label>生源省份（可选）</label><input type="text" data-key="hometown_province" placeholder="如 广东省"></div>
+        <div class="field"><label>意向工作地区（可选，逗号分隔）</label><input type="text" data-key="preferred_regions" placeholder="广州,深圳,广东省"></div>
+        <div class="field"><label>优先户籍/生源所在地</label><select data-key="prefer_hometown"><option value="false" selected>否</option><option value="true">是</option></select></div>
+        <div class="field"><label>预估笔试分（可选）</label><input type="number" step="0.1" data-key="estimated_score" placeholder="如 132.5"></div>
+        <div class="field"><label>预估分满分</label><select data-key="score_scale"><option value="100">100</option><option value="150">150</option><option value="200" selected>200</option><option value="300">300</option></select></div>
+        <div class="field"><label>退役士兵</label><select data-key="veteran"><option value="false" selected>否</option><option value="true">是</option></select></div>
+        <div class="field"><label>残疾人</label><select data-key="disabled"><option value="false" selected>否</option><option value="true">是</option></select></div>
+      </div>
+      <div class="projects">
+        <div class="projects-title">服务基层项目（如三支一扶、大学生村官；没有就不用加）</div>
+        <div id="projectList"></div>
+        <button type="button" class="ghost small" id="addProject">+ 添加一个项目</button>
+      </div>
+      <div class="actions-row">
+        <button class="primary" id="analyzeBtn" type="button">开始筛选</button>
+        <button class="ghost" id="saveProfileBtn" type="button">保存条件</button>
+        <button class="ghost" id="clearProfileBtn" type="button">清除本机保存</button>
+        <span id="status"></span>
+      </div>
+    </section>
+  </div>
+
+  <section class="results hidden" id="results">
+    <div class="result-head">
+      <h2>筛选结果</h2>
+      <span class="badge s-符合 hidden" id="sampleBadge">示例数据</span>
+      <span class="muted" id="truncatedNote"></span>
+      <button class="ghost small" id="adjustBtn" type="button" style="margin-left:auto">调整条件重新筛选</button>
+    </div>
+    <div class="cards" id="cards"></div>
+    <div class="actions-row">
+      <a class="ghost" href="/api/report.xlsx">下载 Excel 报告</a>
+      <a class="ghost" href="/api/report.html" target="_blank" rel="noreferrer">打开网页版报告</a>
+      <a class="ghost" href="/api/summary.txt" target="_blank" rel="noreferrer">查看文字摘要</a>
+      <span class="muted" id="runDir"></span>
+    </div>
+    <details class="issues hidden" id="issuesPanel">
+      <summary id="issuesSummary"></summary>
+      <ul id="issuesList"></ul>
+    </details>
+    <div class="filters">
+      <input type="text" id="search" placeholder="搜索部门 / 职位 / 代码 / 专业" style="width:300px">
+      <select id="sort">
+        <option value="index">按推荐指数</option>
+        <option value="predicted">按预测进面分</option>
+        <option value="history">按历史年数</option>
+        <option value="headcount">按招录人数</option>
+        <option value="preference">按意向地区</option>
+        <option value="barrier">按竞争壁垒</option>
+      </select>
+      <div class="chips" id="statusChips">
+        <span class="chip on" data-status="符合">符合</span>
+        <span class="chip on" data-status="存疑">存疑</span>
+        <span class="chip" data-status="不符合">不符合</span>
+      </div>
+      <span class="chip" id="prefChip">只看意向地区</span>
+      <label class="muted" style="font-size:13px"><input type="checkbox" id="historyOnly"> 只看有历史分的</label>
+      <span class="muted" style="font-size:12px">「优势」= 意向地区命中，或岗位限制对你有利</span>
+      <span class="muted">共 <b id="total">0</b> 条</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>分档</th><th>状态</th><th>岗位</th><th>部门 / 单位</th><th>招录</th>
+          <th>学历</th><th>专业</th><th>应届</th><th>基层</th><th>预测分</th><th>历史</th><th>指数</th><th>优势</th><th>理由</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <button id="prev" type="button">上一页</button><span id="pageInfo"></span><button id="next" type="button">下一页</button>
+    </div>
+  </section>
+</main>
+
+<aside class="drawer" id="drawer">
+  <button class="close" id="closeDrawer" type="button">×</button>
+  <div id="drawerBody"></div>
+</aside>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const state = { positions: [], history: [], rows: [], page: 1, pageSize: 100, statuses: new Set(['符合', '存疑']), search: '', sort: 'index', historyOnly: false, prefOnly: false, sample: false, busy: false };
+  const PROFILE_KEY = 'xuangang-profile-v1';
+
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const fmt = v => (v == null || v === '') ? '—' : v;
+  const tierBadge = t => t ? `<span class="badge b-${esc(t)}">${esc(t)}</span>` : '<span class="muted">—</span>';
+  const statusBadge = s => `<span class="badge s-${esc(s)}">${esc(s)}</span>`;
+  const advantageBadges = r => {
+    const tags = (r.advantage_tags || []).map(t => `<span class="tag ${t.kind === 'pref' ? 'tag-pref' : 'tag-barrier'}">${esc(t.text)}</span>`);
+    return tags.length ? tags.join('') : '<span class="muted">—</span>';
+  };
+
+  function toast(message, bad) {
+    const el = $('toast');
+    el.textContent = message;
+    el.classList.toggle('bad', !!bad);
+    el.classList.add('show');
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => el.classList.remove('show'), 4500);
+  }
+
+  function setStatus(text) { $('status').textContent = text || ''; }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).split(',', 2)[1]);
+      reader.onerror = () => reject(new Error('读取文件失败：' + file.name));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function api(path, payload) {
+    const response = await fetch(path, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload || {})
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) throw new Error(data.error || ('请求失败：' + path));
+    return data;
+  }
+
+  async function getJson(path) {
+    const response = await fetch(path);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) throw new Error(data.error || ('请求失败：' + path));
+    return data;
+  }
+
+  // ---------- 文件选择 ----------
+
+  function bindDrop(dropId, inputId, kind) {
+    const drop = $(dropId);
+    const input = $(inputId);
+    const busyGuard = () => {
+      if (state.busy) { toast('正在识别文件，请稍候再选'); return true; }
+      return false;
+    };
+    drop.addEventListener('dragover', event => { event.preventDefault(); drop.classList.add('drag'); });
+    drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+    drop.addEventListener('drop', event => {
+      event.preventDefault();
+      drop.classList.remove('drag');
+      if (busyGuard()) return;
+      const files = Array.from(event.dataTransfer.files || []);
+      if (files.length) uploadFiles(kind, files);
+    });
+    input.addEventListener('change', event => {
+      if (busyGuard()) { input.value = ''; return; }
+      const files = Array.from(event.target.files || []);
+      if (files.length) uploadFiles(kind, files);
+      input.value = '';
+    });
+  }
+
+  function applySuggested(kind, result) {
+    const suggested = (result.inspect && result.inspect.suggested) || {};
+    if (kind === 'positions' && state.positions.filter(item => !item.pending && item.status === 'ok').length === 0) {
+      if (suggested.exam) $('posExam').value = suggested.exam;
+      if (suggested.exam === 'shengkao' && suggested.province) {
+        $('posProvince').value = suggested.province;
+      } else if (suggested.exam === 'guokao') {
+        $('posProvince').value = '';
+      }
+      if (suggested.year) $('posYear').value = suggested.year;
+    }
+    if (kind === 'history') {
+      // 同一份文件可能混用 100/200 分制，默认留给后端按部门自动推断
+      result.scale = '';
+      result.scaleHint = suggested.scale || '';
+      result.year = suggested.year || '';
+      result.kindValue = suggested.kind || '';
+    }
+  }
+
+  function updateSummaries() {
+    const okPositions = state.positions.filter(item => !item.pending && item.status !== 'error');
+    const posRows = okPositions.reduce((sum, item) => sum + ((item.inspect && item.inspect.total_rows) || 0), 0);
+    if (!state.positions.length) {
+      $('posSummary').innerHTML = '还没有选择岗位表，点上方虚线框选择或拖入。';
+    } else if (state.positions.some(item => item.pending)) {
+      $('posSummary').innerHTML = '<span class="spinner"></span>正在识别岗位表…';
+    } else {
+      $('posSummary').innerHTML = `已识别 <b>${okPositions.length}</b> 个文件，共 <b>${posRows}</b> 行岗位数据`;
+    }
+    $('panelPositions').classList.toggle('done', okPositions.length > 0);
+
+    const okHistory = state.history.filter(item => !item.pending && item.status !== 'error');
+    const years = [...new Set(okHistory.map(item => item.year).filter(Boolean))].sort();
+    if (!state.history.length) {
+      $('histSummary').innerHTML = '没有分数线也能先筛岗位，只是没有预测分和分档。';
+    } else if (state.history.some(item => item.pending)) {
+      $('histSummary').innerHTML = '<span class="spinner"></span>正在识别分数线…';
+    } else {
+      $('histSummary').innerHTML = `已识别 <b>${okHistory.length}</b> 份分数线${years.length ? `，覆盖 ${years.join('、')} 年` : ''}`;
+    }
+    $('panelHistory').classList.toggle('done', okHistory.length > 0);
+  }
+
+  function updateAnalyzeState() {
+    const pending = [...state.positions, ...state.history].some(item => item.pending);
+    const hasPositions = state.positions.some(item => !item.pending && item.status !== 'error');
+    $('analyzeBtn').disabled = state.busy || pending || !hasPositions;
+    $('analyzeBtn').title = hasPositions ? '' : '先上传岗位表，或点右上角「先看示例数据」';
+    $('sampleBtn').disabled = state.busy;
+  }
+
+  async function uploadFiles(kind, files) {
+    const valid = files.filter(file => /\.(xlsx|xlsm|xls|csv)$/i.test(file.name));
+    const invalid = files.filter(file => !/\.(xlsx|xlsm|xls|csv)$/i.test(file.name));
+    if (invalid.length) toast('跳过不支持的文件：' + invalid.map(file => file.name).join('、'), true);
+    if (!valid.length) return;
+
+    const unique = [];
+    const seenNames = new Set();
+    valid.forEach(file => {
+      if (!seenNames.has(file.name)) { seenNames.add(file.name); unique.push(file); }
+    });
+
+    state.busy = true;
+    const tasks = unique.map(file => {
+      const placeholder = { name: file.name, pending: true, status: 'uploading', inspect: null };
+      const existing = state[kind].findIndex(item => item.name === file.name);
+      if (existing >= 0) state[kind][existing] = placeholder;
+      else state[kind].push(placeholder);
+      return { file, index: existing >= 0 ? existing : state[kind].length - 1 };
+    });
+    renderFileList(kind);
+    updateSummaries();
+    updateAnalyzeState();
+    setStatus(`正在上传并识别 ${unique.length} 个文件…`);
+    try {
+      for (let step = 0; step < tasks.length; step += 1) {
+        const { file, index } = tasks[step];
+        setStatus(`正在上传并识别 ${step + 1}/${tasks.length}：${file.name}`);
+        try {
+          const content = await fileToBase64(file);
+          const meta = kind === 'positions'
+            ? { exam: $('posExam').value, province: $('posProvince').value.trim(), year: parseInt($('posYear').value, 10) || null }
+            : { exam: $('posExam').value, province: $('posProvince').value.trim() };
+          const result = await api('/api/upload', { kind, filename: file.name, content_base64: content, meta });
+          result.status = 'ok';
+          applySuggested(kind, result);
+          state[kind][index] = result;
+        } catch (error) {
+          state[kind][index] = { name: file.name, status: 'error', error: error.message || String(error), inspect: null };
+        }
+        renderFileList(kind);
+        updateSummaries();
+        updateAnalyzeState();
+      }
+      const okCount = state[kind].filter(item => item.status === 'ok').length;
+      const badCount = state[kind].filter(item => item.status === 'error').length;
+      if (okCount) toast(`已识别 ${okCount} 个文件${badCount ? `，${badCount} 个失败` : ''}`);
+      if (badCount) setStatus(`${badCount} 个文件识别失败，可移除后重试`);
+      else setStatus('识别完成，可以开始筛选');
+    } catch (error) {
+      setStatus('');
+      toast(error.message || String(error), true);
+    } finally {
+      state.busy = false;
+      updateSummaries();
+      updateAnalyzeState();
+    }
+  }
+
+  function renderFileList(kind) {
+    const listId = kind === 'positions' ? 'posList' : 'histList';
+    const container = $(listId);
+    container.innerHTML = '';
+    state[kind].forEach((item, index) => {
+      const inspect = item.inspect || {};
+      const sheets = inspect.sheets || [];
+      const rows = inspect.total_rows || 0;
+      const sheetText = sheets.map(s => `${esc(s.name)}（表头第 ${s.header_row} 行，${s.rows} 行）`).join('；');
+      const mappingFields = sheets.length ? Object.values(sheets[0].mapping || {}).map(m => m.label).filter(Boolean) : [];
+      const warnings = (inspect.warnings || []).slice(0, 3);
+      const status = item.pending ? 'uploading' : (item.status === 'error' ? 'error' : 'ok');
+      const box = document.createElement('div');
+      box.className = `file-item ${status === 'uploading' ? 'uploading' : status === 'error' ? 'error' : ''}`.trim();
+      box.innerHTML = `
+        <div class="file-top">
+          <div class="file-name" title="${esc(item.name)}">${esc(item.name)}</div>
+          <span class="file-state">${status === 'uploading' ? '<span class="spinner"></span>识别中' : status === 'error' ? '识别失败' : '已识别'}</span>
+          <button class="micro" type="button" title="移除">×</button>
+        </div>
+        ${status === 'error'
+          ? `<div class="file-warn">${esc(item.error || '上传或识别失败')}</div>`
+          : `<div class="file-meta">
+               ${status === 'uploading' ? '<span class="spinner"></span>正在上传并读取表头……' : `<b>识别到</b> ${rows} 行数据；${sheetText}`}
+               ${mappingFields.length ? `<br><b>命中列</b> ${esc([...new Set(mappingFields)].slice(0, 10).join('、'))}${mappingFields.length > 10 ? ' 等' : ''}` : ''}
+             </div>`}
+        ${status === 'ok' && kind === 'history' ? `
+          <div class="file-config">
+            <label>年份 <input type="number" class="hist-year" data-index="${index}" value="${item.year || ''}" placeholder="自动"></label>
+            <label>满分 <select class="hist-scale" data-index="${index}">
+              <option value="">自动</option>
+              <option value="100"${item.scale === 100 ? ' selected' : ''}>100</option>
+              <option value="150"${item.scale === 150 ? ' selected' : ''}>150</option>
+              <option value="200"${item.scale === 200 ? ' selected' : ''}>200</option>
+              <option value="300"${item.scale === 300 ? ' selected' : ''}>300</option>
+            </select></label>
+            <span class="muted">${item.scaleHint ? `识别约 ${item.scaleHint} 分制` : '按部门自动推断'}</span>
+            <span class="muted">类型：${esc(item.kindValue || '笔试最低进面分')}</span>
+          </div>` : ''}
+        ${status === 'ok' && warnings.length ? `<div class="file-warn">${warnings.map(esc).join('<br>')}</div>` : ''}
+      `;
+      box.querySelector('.micro').addEventListener('click', () => {
+        if (kind === 'history' && box.querySelector('.hist-year')) {
+          item.year = box.querySelector('.hist-year').value;
+          item.scale = box.querySelector('.hist-scale') ? box.querySelector('.hist-scale').value : item.scale;
+        }
+        state[kind].splice(index, 1);
+        renderFileList(kind);
+        updateSummaries();
+        updateAnalyzeState();
+      });
+      if (status === 'ok' && kind === 'history') {
+        const yearInput = box.querySelector('.hist-year');
+        const scaleSelect = box.querySelector('.hist-scale');
+        if (yearInput) yearInput.addEventListener('input', () => { item.year = yearInput.value; updateSummaries(); });
+        if (scaleSelect) scaleSelect.addEventListener('change', () => { item.scale = scaleSelect.value; });
+      }
+      container.appendChild(box);
+    });
+  }
+
+  // ---------- 个人条件 ----------
+
+  function readProfile() {
+    const profile = {};
+    document.querySelectorAll('#profileGrid [data-key]').forEach(el => {
+      const key = el.dataset.key;
+      let value = el.value;
+      if (el.tagName === 'SELECT' && (value === 'true' || value === 'false')) value = value === 'true';
+      if (['birth_year', 'graduation_year', 'grassroots_years'].includes(key)) value = value === '' ? null : parseInt(value, 10);
+      if (key === 'estimated_score') value = value === '' ? null : parseFloat(value);
+      if (key === 'school_tags' || key === 'certificates' || key === 'preferred_regions') value = value.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+      profile[key] = value;
+    });
+    profile.exam = $('posExam').value;
+    profile.province = $('posExam').value === 'shengkao' ? $('posProvince').value.trim() : '';
+    profile.target_year = parseInt($('posYear').value, 10) || new Date().getFullYear() + 1;
+    profile.score_scale = parseInt(document.querySelector('#profileGrid [data-key="score_scale"]').value, 10) || 200;
+    profile.grassroots_projects = collectProjects();
+    return profile;
+  }
+
+  function collectProjects() {
+    return Array.from(document.querySelectorAll('#projectList .project-row')).map(row => ({
+      name: row.querySelector('.proj-name').value.trim(),
+      completed: row.querySelector('.proj-done').checked
+    })).filter(item => item.name);
+  }
+
+  function renderProjects(projects) {
+    const list = $('projectList');
+    list.innerHTML = '';
+    (projects || []).forEach(item => addProjectRow(item.name || '', item.completed !== false));
+  }
+
+  function addProjectRow(name, completed) {
+    const row = document.createElement('div');
+    row.className = 'project-row';
+    row.innerHTML = `
+      <input type="text" class="proj-name" placeholder="如 三支一扶 / 大学生村官" value="${esc(name || '')}">
+      <label><input type="checkbox" class="proj-done"${completed ? ' checked' : ''}> 服务期满且考核合格</label>
+      <button class="micro" type="button" title="删除">×</button>
+    `;
+    row.querySelector('.micro').addEventListener('click', () => row.remove());
+    $('projectList').appendChild(row);
+  }
+
+  function applyProfile(profile) {
+    if (!profile) return;
+    if (profile.exam) $('posExam').value = profile.exam;
+    if (profile.province) $('posProvince').value = profile.province;
+    if (profile.target_year) $('posYear').value = profile.target_year;
+    document.querySelectorAll('#profileGrid [data-key]').forEach(el => {
+      const key = el.dataset.key;
+      if (!(key in profile)) return;
+      let value = profile[key];
+      if (value == null) value = '';
+      if (Array.isArray(value)) value = value.join(',');
+      if (el.tagName === 'SELECT' && typeof value === 'boolean') value = value ? 'true' : 'false';
+      el.value = value;
+    });
+    renderProjects(profile.grassroots_projects || []);
+  }
+
+  function saveProfileLocal() {
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(readProfile())); } catch (error) {}
+  }
+
+  async function loadProfile() {
+    let local = null;
+    try { local = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null'); } catch (error) {}
+    if (local) {
+      applyProfile(local);
+      $('profileHint').textContent = '已恢复上次保存的条件';
+      return;
+    }
+    try {
+      const data = await getJson('/api/profile');
+      if (data.profile && Object.keys(data.profile).length) {
+        applyProfile(data.profile);
+        $('profileHint').textContent = data.has_config ? '已从 config/bob.toml 读取' : '';
+      }
+    } catch (error) {}
+  }
+
+  $('addProject').addEventListener('click', () => addProjectRow('', true));
+  $('saveProfileBtn').addEventListener('click', () => { saveProfileLocal(); toast('条件已保存在本机浏览器'); });
+  $('clearProfileBtn').addEventListener('click', () => {
+    try { localStorage.removeItem(PROFILE_KEY); } catch (error) {}
+    toast('已清除本机保存的条件');
+  });
+
+  // ---------- 分析 ----------
+
+  function buildFilesPayload() {
+    const exam = $('posExam').value;
+    const province = $('posProvince').value.trim();
+    const year = parseInt($('posYear').value, 10) || null;
+    const files = [];
+    state.positions.filter(item => item.status === 'ok' && item.file_id).forEach(item => files.push({ file_id: item.file_id, meta: { exam, province, year } }));
+    state.history.filter(item => item.status === 'ok' && item.file_id).forEach(item => files.push({
+      file_id: item.file_id,
+      meta: { exam, province, year: item.year ? parseInt(item.year, 10) : null, scale: item.scale ? parseInt(item.scale, 10) : null, kind: item.kindValue || '笔试最低进面分' }
+    }));
+    return files;
+  }
+
+  async function runAnalyze(sample) {
+    state.busy = true;
+    updateAnalyzeState();
+    setStatus(sample ? '正在用示例数据筛选……' : '正在筛选……');
+    try {
+      const hasPositions = state.positions.some(item => !item.pending && item.status !== 'error');
+      if (!sample && !hasPositions) throw new Error('请先上传岗位表（或点右上角「先看示例数据」）');
+      saveProfileLocal();
+      const payload = { profile: readProfile(), files: sample ? [] : buildFilesPayload(), sample: !!sample };
+      const data = await api('/api/analyze', payload);
+      state.rows = data.rows || [];
+      state.sample = !!sample;
+      state.page = 1;
+      showResults(data);
+      const approved = (data.stats && data.stats.status && data.stats.status['符合']) || 0;
+      toast(`筛选完成：符合 ${approved} 个岗位`);
+      setStatus(data.truncated ? '完成（网页只显示前 3000 条）' : '完成');
+    } catch (error) {
+      setStatus('');
+      toast(error.message || String(error), true);
+    } finally {
+      state.busy = false;
+      updateAnalyzeState();
+    }
+  }
+
+  $('analyzeBtn').addEventListener('click', () => runAnalyze(false));
+  $('sampleBtn').addEventListener('click', () => runAnalyze(true));
+
+  // ---------- 结果 ----------
+
+  function showResults(data) {
+    const stats = data.stats || {};
+    const cards = [
+      ['岗位总数', stats.positions, ''], ['符合', (stats.status || {})['符合'] || 0, 'ok'],
+      ['存疑', (stats.status || {})['存疑'] || 0, 'warn'], ['不符合', (stats.status || {})['不符合'] || 0, 'bad'],
+      ['有历史分', stats.with_history, ''], ['分数线记录', stats.records, '']
+    ];
+    if (state.rows.some(r => r.preference != null)) {
+      cards.push(['意向地区命中', state.rows.filter(r => r.preference === 1).length, '']);
+    }
+    $('prefChip').style.display = state.rows.some(r => r.preference != null) ? '' : 'none';
+    $('cards').innerHTML = cards.map(c => `<div class="card ${c[2]}"><b>${c[1]}</b><span>${c[0]}</span></div>`).join('');
+    $('truncatedNote').textContent = data.truncated ? '网页只展示前 3000 条，完整结果请下载 Excel。' : '';
+    $('runDir').textContent = data.run_dir || '';
+    $('sampleBadge').classList.toggle('hidden', !state.sample);
+    const issues = data.issues || [];
+    const panel = $('issuesPanel');
+    if (issues.length) {
+      panel.classList.remove('hidden');
+      $('issuesSummary').textContent = `数据检查：${data.issues_total} 条提示（点开查看，重要问题建议核对原始表格）`;
+      $('issuesList').innerHTML = issues.map(item => `<li>${esc(item.level)}｜${esc(item.file || '')} ${esc(item.sheet || '')} ${item.row ? '第' + item.row + '行' : ''}：${esc(item.message)}</li>`).join('');
+    } else {
+      panel.classList.add('hidden');
+    }
+    $('results').classList.remove('hidden');
+    renderRows();
+    $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function filteredRows() {
+    const keyword = state.search.trim().toLowerCase();
+    let list = state.rows.filter(r => {
+      if (!state.statuses.has(r.status)) return false;
+      if (state.historyOnly && (!r.history || !r.history.length)) return false;
+      if (state.prefOnly && r.preference !== 1) return false;
+      if (keyword) {
+        const blob = [r.dept, r.unit, r.post, r.code, r.major, r.education, r.workplace, r.remark].join(' ').toLowerCase();
+        if (!blob.includes(keyword)) return false;
+      }
+      return true;
+    });
+    const key = {
+      index: r => -(r.index || 0),
+      predicted: r => -(r.predicted == null ? -1 : r.predicted),
+      history: r => -(r.history ? r.history.length : 0),
+      headcount: r => -(r.headcount || 0),
+      preference: r => -(r.preference == null ? 0 : r.preference),
+      barrier: r => -(r.barrier || 0)
+    }[state.sort];
+    return list.sort((a, b) => key(a) - key(b));
+  }
+
+  function renderRows() {
+    const list = filteredRows();
+    const pages = Math.max(1, Math.ceil(list.length / state.pageSize));
+    if (state.page > pages) state.page = pages;
+    const start = (state.page - 1) * state.pageSize;
+    const rows = list.slice(start, start + state.pageSize);
+    $('tbody').innerHTML = rows.map(r => `
+      <tr data-id="${esc(r.id)}">
+        <td>${tierBadge(r.tier)}</td>
+        <td>${statusBadge(r.status)}</td>
+        <td><b>${esc(r.post)}</b><div class="muted">${esc(r.code || '')}</div></td>
+        <td>${esc(r.dept)}<div class="muted">${esc(r.unit || '')}</div></td>
+        <td>${esc(fmt(r.headcount))}</td>
+        <td>${esc(fmt(r.education))}</td>
+        <td>${esc(fmt(r.major))}</td>
+        <td>${esc(fmt(r.fresh))}</td>
+        <td>${esc(fmt(r.grassroots))}</td>
+        <td>${r.predicted == null ? '—' : esc(r.predicted) + (r.predicted_scale ? '/' + esc(r.predicted_scale) : '')}</td>
+        <td>${r.history && r.history.length ? r.history.map(h => h.year).join('/') : '—'}</td>
+        <td>${esc(r.index)}</td>
+        <td>${advantageBadges(r)}</td>
+        <td>${esc(r.reason)}</td>
+      </tr>`).join('');
+    $('total').textContent = list.length;
+    $('pageInfo').textContent = `第 ${state.page} / ${pages} 页`;
+    state.visible = list;
+  }
+
+  function openDrawer(id) {
+    const r = (state.visible || []).find(item => item.id === id);
+    if (!r) return;
+    const kv = [
+      ['岗位id', r.id], ['部门', r.dept], ['用人司局', r.unit], ['职位名称', r.post], ['职位代码', r.code],
+      ['招录人数', r.headcount], ['学历', r.education], ['学位', r.degree], ['专业', r.major],
+      ['政治面貌', r.politics], ['应届', r.fresh], ['基层经历', r.grassroots], ['证书', r.cert],
+      ['户籍', r.hukou], ['工作地点', r.workplace], ['备注', r.remark],
+      ['来源', (r.source || '') + ' / ' + (r.sheet || '') + ' 第' + (r.row || '') + '行']
+    ];
+    const checks = (r.checks || []).map(c => {
+      const cls = c.ok === true ? 'check-ok' : (c.ok === false ? 'check-bad' : 'check-unknown');
+      const mark = c.ok === true ? '✓' : (c.ok === false ? '✗' : '?');
+      return `<li class="${cls}"><b>${mark} ${esc(c.dim)}</b>：${esc(c.detail)}${c.evidence ? `<div class="muted">依据：${esc(c.evidence)}</div>` : ''}</li>`;
+    }).join('');
+    const history = (r.history || []).map(h => `<li>${esc(h.year)} 年：最低 ${esc(fmt(h.min))}${h.max != null && h.max !== h.min ? ' / 最高 ' + esc(h.max) : ''}（${esc(h.scale)} 分制，${esc(h.source)}）</li>`).join('');
+    const advantages = [];
+    if (r.preference === 1) advantages.push(`意向地区命中：${r.preference_label}`);
+    else if (r.preference === 0) advantages.push('不在意向地区');
+    if (r.barrier_tags && r.barrier_tags.length) advantages.push('岗位限制对你有利：' + r.barrier_tags.join('、') + `（壁垒分 ${r.barrier}）`);
+    $('drawerBody').innerHTML = `
+      <h2>${esc(r.post)}</h2>
+      <div class="muted">${statusBadge(r.status)} ${tierBadge(r.tier)} 指数 ${esc(r.index)} · 置信度 ${esc(r.confidence)} · 热度 ${esc(fmt(r.heat_label))}</div>
+      <h3>选岗优势</h3>${advantages.length ? `<ul>${advantages.map(a => `<li>${esc(a)}</li>`).join('')}</ul>` : '<div class="muted">没有配置偏好，或岗位没有形成限制壁垒</div>'}
+      <h3>判定明细</h3><ul>${checks}</ul>
+      ${r.warnings ? `<h3>提醒</h3><div class="warnbox">${esc(r.warnings)}</div>` : ''}
+      <h3>近三年进面分</h3>${history ? `<ul>${history}</ul>` : '<div class="muted">没有可用历史分数</div>'}
+      ${r.predicted != null ? `<p>预测今年最低进面分：<b>${esc(r.predicted)}</b>（${esc(r.predicted_scale)} 分制，置信度 ${esc(r.confidence)}）${r.margin != null ? `，与你的预估分差 <b>${esc(r.margin)}</b>` : ''}</p>` : ''}
+      <h3>岗位信息</h3><dl class="kv">${kv.map(item => `<dt>${esc(item[0])}</dt><dd>${esc(fmt(item[1]))}</dd>`).join('')}</dl>
+    `;
+    $('drawer').classList.add('open');
+  }
+
+  $('tbody').addEventListener('click', event => {
+    const tr = event.target.closest('tr');
+    if (tr) openDrawer(tr.dataset.id);
+  });
+  $('closeDrawer').addEventListener('click', () => $('drawer').classList.remove('open'));
+  $('drawer').addEventListener('click', event => { if (event.target.id === 'drawer') event.currentTarget.classList.remove('open'); });
+  $('search').addEventListener('input', event => { state.search = event.target.value; state.page = 1; renderRows(); });
+  $('sort').addEventListener('change', event => { state.sort = event.target.value; state.page = 1; renderRows(); });
+  $('historyOnly').addEventListener('change', event => { state.historyOnly = event.target.checked; state.page = 1; renderRows(); });
+  $('prefChip').addEventListener('click', () => {
+    state.prefOnly = !state.prefOnly;
+    $('prefChip').classList.toggle('on', state.prefOnly);
+    state.page = 1;
+    renderRows();
+  });
+  $('adjustBtn').addEventListener('click', () => {
+    $('panelProfile').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  document.querySelectorAll('#statusChips .chip').forEach(chip => chip.addEventListener('click', () => {
+    const status = chip.dataset.status;
+    if (state.statuses.has(status)) { state.statuses.delete(status); chip.classList.remove('on'); }
+    else { state.statuses.add(status); chip.classList.add('on'); }
+    state.page = 1; renderRows();
+  }));
+  $('prev').addEventListener('click', () => { if (state.page > 1) { state.page--; renderRows(); } });
+  $('next').addEventListener('click', () => { state.page++; renderRows(); });
+
+  bindDrop('posDrop', 'posInput', 'positions');
+  bindDrop('histDrop', 'histInput', 'history');
+  updateSummaries();
+  updateAnalyzeState();
+  loadProfile();
+})();
+</script>
+</body>
+</html>

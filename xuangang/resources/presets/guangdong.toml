@@ -1,0 +1,25 @@
+[meta]
+name = "guangdong"
+display_name = "广东省考"
+exam = "shengkao"
+province = "广东省"
+extends = "shengkao_generic"
+description = "广东省考职位表的专业按学历拆成三列，这里全部映射到 major 并拼接。"
+
+[positions.fields]
+dept = ["招录机关"]
+unit = ["用人单位", "招录单位"]
+post_name = ["职位名称"]
+post_code = ["职位代码"]
+post_attr = ["职位类别"]
+headcount = ["招考人数"]
+major = ["研究生专业名称及代码", "本科专业名称及代码", "大专专业名称及代码", "专业名称及代码", "专业要求"]
+education = ["学历要求", "学历"]
+degree = ["学位要求", "学位"]
+fresh = ["是否要求应届毕业生"]
+grassroots = ["基层工作经历"]
+cert = ["职业资格", "资格证书"]
+hukou = ["户籍要求", "生源地要求"]
+gender = ["性别要求"]
+work_place = ["工作地点", "工作地"]
+remark = ["其他要求", "备注"]

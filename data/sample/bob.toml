@@ -1,0 +1,37 @@
+# bob 的个人条件（仿真数据配套）
+name = "bob"
+education_level = "本科"
+degree = "学士"
+full_time = true
+major = "汉语言文学"
+major_code = "050101"
+major_level = "本科"
+school = "华南师范大学"
+school_tags = ["双一流"]
+
+politics = "共青团员"
+ethnicity = "汉族"
+gender = "男"
+birth_year = 2001
+fresh_status = "择业期内"
+graduation_year = 2025
+has_employment_record = false
+
+grassroots_years = 2
+certificates = ["法律职业资格A证"]
+
+hukou_province = "广东省"
+hometown_province = "广东省"
+
+preferred_regions = ["广州", "深圳"]
+prefer_hometown = true
+
+exam = "guokao"
+province = ""
+target_year = 2027
+estimated_score = 132.5
+score_scale = 200
+
+[[grassroots_projects]]
+name = "三支一扶"
+completed = true

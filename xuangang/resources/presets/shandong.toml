@@ -1,0 +1,26 @@
+[meta]
+name = "shandong"
+display_name = "山东省考"
+exam = "shengkao"
+province = "山东省"
+extends = "shengkao_generic"
+description = "山东省考职位表常见列：招录机关、用人单位、职位名称、职位代码、招录人数、学历要求、学位要求、专业要求。"
+
+[positions.fields]
+dept = ["招录机关", "招录单位"]
+unit = ["用人单位", "所属单位"]
+post_name = ["职位名称"]
+post_code = ["职位代码"]
+post_attr = ["职位类别"]
+headcount = ["招录人数"]
+major = ["专业要求", "专业"]
+education = ["学历要求", "学历"]
+degree = ["学位要求", "学位"]
+politics = ["政治面貌"]
+grassroots = ["基层工作经历", "基层工作年限"]
+fresh = ["是否应届", "是否要求应届毕业生"]
+cert = ["资格证书", "职业资格"]
+hukou = ["户籍要求"]
+gender = ["性别要求"]
+work_place = ["工作地点", "工作地"]
+remark = ["其他条件", "备注"]

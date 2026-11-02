@@ -1,0 +1,31 @@
+# bob 的广东省考条件（仿真数据配套）
+name = "bob"
+education_level = "本科"
+degree = "学士"
+full_time = true
+major = "汉语言文学"
+major_code = "050101"
+major_level = "本科"
+
+politics = "共青团员"
+ethnicity = "汉族"
+gender = "男"
+birth_year = 2001
+fresh_status = "择业期内"
+graduation_year = 2025
+has_employment_record = false
+
+grassroots_years = 2
+certificates = ["法律职业资格A证"]
+
+hukou_province = "广东省"
+hometown_province = "广东省"
+
+preferred_regions = ["广州"]
+prefer_hometown = true
+
+exam = "shengkao"
+province = "广东省"
+target_year = 2026
+estimated_score = 240
+score_scale = 300

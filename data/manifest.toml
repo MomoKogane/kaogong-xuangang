@@ -1,0 +1,36 @@
+# 数据清单：声明每个文件属于哪场考试、哪一年、什么分数制式。
+# 相对路径以项目根目录为准。没有声明的文件也可以用命令行参数临时指定。
+
+# ---- 岗位表（当年要报考的岗位）----
+# [[positions]]
+# file = "data/incoming/positions/2027国考职位表.xlsx"
+# exam = "guokao"
+# province = "全国"
+# year = 2027
+# preset = "guokao"
+# sheet = ""                      # 可选：只读指定 sheet
+
+# ---- 往年进面分数线（民间整理也放这里）----
+# [[history]]
+# file = "data/incoming/history/2026国考进面分数线.xlsx"
+# exam = "guokao"
+# province = "全国"
+# year = 2026
+# kind = "笔试最低进面分"          # 笔试最低进面分 | 综合成绩 | 面试成绩
+# scale = 200                    # 100 | 150 | 200 | 300
+
+# ---- 省考示例 ----
+# [[positions]]
+# file = "data/incoming/positions/2026广东省考职位表.xlsx"
+# exam = "shengkao"
+# province = "广东省"
+# year = 2026
+# preset = "guangdong"
+#
+# [[history]]
+# file = "data/incoming/history/2025广东省考进面分数.xlsx"
+# exam = "shengkao"
+# province = "广东省"
+# year = 2025
+# kind = "笔试最低进面分"
+# scale = 300

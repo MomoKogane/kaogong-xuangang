@@ -1,0 +1,47 @@
+# 考公选岗个人条件（bob.toml）
+# 修改后运行： .\run.ps1 run --config config\bob.toml --positions ... --history ...
+
+name = "bob"
+
+# ---------- 学历 / 学位 / 专业 ----------
+education_level = "本科"          # 大专 | 本科 | 硕士研究生 | 博士研究生
+degree = "学士"                  # 无 | 学士 | 硕士 | 博士
+full_time = true                 # 是否全日制
+major = "汉语言文学"              # 毕业证上的专业全称
+major_code = "050101"            # 可选，专业代码（能填就填，匹配更准）
+major_level = "本科"              # 专业目录层级：本科 | 研究生
+school = ""                      # 院校名称（可选）
+school_tags = []                 # 院校标签，如 ["双一流", "985"]
+
+# ---------- 身份条件 ----------
+politics = "共青团员"             # 中共党员 | 中共预备党员 | 共青团员 | 群众 | 民主党派
+ethnicity = "汉族"                # 民族
+gender = "男"                    # 男 | 女
+birth_year = 2001                # 出生年份（用于年龄提示）
+fresh_status = "择业期内"          # 当年应届 | 择业期内 | 非应届
+graduation_year = 2025
+has_employment_record = false    # 是否已落实工作单位（影响「择业期内未落实工作」类岗位）
+
+# ---------- 工作经历 / 证书 ----------
+grassroots_years = 2             # 基层工作年限（0/1/2/3...）
+certificates = ["法律职业资格A证"]
+
+# ---------- 地域 ----------
+hukou_province = "广东省"         # 户籍所在省
+hometown_province = "广东省"      # 生源所在省
+
+# ---------- 选岗偏好（影响排序，不影响能不能报） ----------
+preferred_regions = ["广州", "深圳"]   # 意向工作城市/省份关键词，可留空
+prefer_hometown = false           # 是否把户籍/生源所在省也作为偏好
+
+# ---------- 考试与参考分 ----------
+exam = "guokao"                  # guokao | shengkao
+province = ""                    # 省考时填写，如 "广东省"
+target_year = 2027               # 要报考的年份
+estimated_score = 132.5          # 可选：预估笔试分（没有就不填）
+score_scale = 200                # 预估分对应的满分（国考 200）
+
+# 服务基层项目（没有就整段删掉；数组表必须放在文件最后，否则后面的键会落进这张表）
+[[grassroots_projects]]
+name = "三支一扶"
+completed = true                 # 是否服务期满且考核合格

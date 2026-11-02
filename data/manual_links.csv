@@ -1,0 +1,6 @@
+# 人工岗位对应表
+# 用法：在下面追加一行，把「某年某岗位」的分数线手工指到某个岗位 id 上。
+# history_source：分数线文件名；history_year：年份；dept/post_name：该行的部门与职位名称。
+# position_id：目标岗位 id（在 out/.../positions.csv 或报告「匹配链路」页里查）。
+# action：link=强制对应；ignore=忽略这条记录。
+history_source,history_year,dept,post_name,position_id,action,note
